@@ -1,4 +1,4 @@
-# PARADYS Publication
+# PARADYS
 
 In this repository, we present the code used to generate validation results presented in our paper "Patient specific ranking of genes driving dysregulations in cancer" for reproduction purposes.
 
