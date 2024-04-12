@@ -443,8 +443,8 @@ def plot_pvalue_distributions(pvalue_file : str):
     # Make the pairgrid.
     g = sns.PairGrid(combined_df, hue="Phenotype",
                      x_vars=combined_df.columns[:4], y_vars=['cluster'], hue_order=['PSA value', 'Gleason score'],
-                     hue_kws={"markers": ['s', 'o']})
-    g.fig.set_size_inches(34,16)
+                     height=20, aspect=.25)
+    #g.fig.set_size_inches(70,40)
     g.tick_params(axis='y', labelsize=label_fontsize)
     
     # Draw a dot plot using the stripplot function
@@ -483,7 +483,7 @@ if __name__=='__main__':
     phenotype_file = "../data/PRAD_phenotypes.csv"
     survival_file = "../data/PRAD_survival.txt"
     xcell_results_path = "../results/clustering/xcell/"
-    plot_gleason_os_xcell(cluster_file_path, phenotype_file, survival_file, xcell_results_path)
+    #plot_gleason_os_xcell(cluster_file_path, phenotype_file, survival_file, xcell_results_path)
     
     # Input paths for FDR plots.
     #plot_fdrs()
