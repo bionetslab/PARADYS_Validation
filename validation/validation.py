@@ -55,10 +55,42 @@ def fdr_patient(truth_df,false_df):
     fdr_df = pd.DataFrame(list(fdr_per_patient.items()), columns=['patient', 'FDR'])
     return fdr_df
 
+def rank_cluster_drivers_by_pagerank(input_dir : str, clusters_file : str, cluster : float, k : int):
+    """Aggregates PageRank scores of driver genes for given list of clusters and returns 
+    top drivers for each cluster.
 
+    Args:
+        input_dir (str): Directory storing patient-specific PageRank results.
+        clusters_file (str): File storing cluster relations for patients.
+        cluster (float): Identifier of cluster to be analyzed.
+        k (int): Number of highest ranked drivers to return.
+    """
+    # Extract patients belonging to given cluster.
+    clusters_df = pd.read_csv(clusters_file, sep=',')
+    subset_df = clusters_df[clusters_df['4_cluster_label']==cluster]
+
+    patients = set(subset_df['Patient'])
+    
+    # Iterate over PageRank score files of all patients and aggregate PageRank scores.
+    driver_scores = {}
+    for pat in patients:
+        pat_file = input_dir+f'{pat}_scores.csv'
+        pat_df = pd.read_csv(pat_file, sep='\t')
+        # Iterate over all driver entries.
+        for driver, score in zip(pat_df['driver'], pat_df['score']):
+            if not driver in driver_scores:
+                driver_scores[driver]=score
+            else:
+                driver_scores[driver] = driver_scores[driver]+score
+    
+    sorted_pairs = sorted(driver_scores.items(), key=lambda x: x[1], reverse=True)
+    sorted_drivers = [x[0] for x in sorted_pairs]
+    return sorted_drivers[:k]
+        
+        
 if __name__ == "__main__":
 
-    truth_df_path = '../fdrs/PRAD/'
+    """ truth_df_path = '../fdrs/PRAD/'
     false_df_path = '../fdrs/PRAD_075/'
 
     # Load truth and false DataFrames.
@@ -66,5 +98,13 @@ if __name__ == "__main__":
     false_df = pd.read_csv(false_df_path+'merged_results.csv', sep='\t')
 
     fdr_df = fdr_patient(truth_df, false_df)
-    fdr_df.to_csv(false_df_path+'patient_fdrs.csv', sep='\t')
+    fdr_df.to_csv(false_df_path+'patient_fdrs.csv', sep='\t') """
+    
+    # Input for cluster ranking according to PageRank results.
+    input_dir = "pagerank_scores/"
+    clusters_file = "../results/clustering/clusters/clusters_PARADYS_DysRegNet_PRAD.csv"
+    cluster = 4.0
+    k = 20
+    driver_scores = rank_cluster_drivers_by_pagerank(input_dir, clusters_file, cluster, k)
+    [print(x) for x in driver_scores]
 
