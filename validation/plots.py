@@ -58,18 +58,18 @@ def compute_mwu_pval(arr1 : np.ndarray, arr2 : np.ndarray, mode : str) -> float:
     return p
 
 def plot_gleason_os_xcell(cluster_file_path : str, phenotype_file : str, survival_file : str,
-                          xcell_results_path : str):
+                          xcell_results_path : str, gsea_file : str):
     """Plots Figure containing gleason scores and OS time per 4.x cluster as well as xcell analysis 
     results.
     """
     # Create one large mosaic plot.
-    fig, axs = plt.subplot_mosaic([['A', 'A', 'B', 'B'], ['C', 'C', 'D', 'D']])
-    fig.set_size_inches(10, 10)
+    fig, axs = plt.subplot_mosaic([['A', 'A', 'B', 'B'], ['C', 'C', 'D', 'D'], ['.', '.', 'E', 'E']])
+    fig.set_size_inches(18, 18)
     axs_list = list(axs.values())
     
     # Add gleason and OS subplot to mosaic plot.
     cluster_level = 4
-    label_fontsize = 15
+    label_fontsize = 24
     
     clusters = [4.0, 4.1, 4.2, 4.3]
     phenotype = "gleason_score"
@@ -98,6 +98,8 @@ def plot_gleason_os_xcell(cluster_file_path : str, phenotype_file : str, surviva
     axs_list[1].grid(True, axis='y')
     axs_list[1].yaxis.set_tick_params(labelsize=label_fontsize)
     axs_list[1].xaxis.set_tick_params(labelsize=label_fontsize)
+    axs_list[1].yaxis.set_label_position("right")
+    axs_list[1].yaxis.tick_right()
     
     # Add mean xcell scores to third mosaic plot.
     clusters = ['4.0', '4.1', '4.2', '4.3']
@@ -118,8 +120,8 @@ def plot_gleason_os_xcell(cluster_file_path : str, phenotype_file : str, surviva
         mean_df1.sort_values(by=['Unnamed: 0'], inplace=True)
         means_df[clust] = mean_df1['mean'].to_list()
     
-    sns.set(font_scale=1.3)
-    s = sns.heatmap(means_df, annot=True, fmt='.1f', ax=axs_list[2], cbar_kws={'label': 'Mean xCell score'})
+    sns.set(font_scale=1.8)
+    s = sns.heatmap(means_df, annot=True, fmt='.1f', ax=axs_list[2], cbar_kws={'label': 'Mean xCell score', 'location': 'left', 'pad': 0.15})
     s.set_xlabel('Cluster', fontsize=label_fontsize)
     s.set_ylabel('Cell type', fontsize=label_fontsize)
     s.set_xticklabels(s.get_xmajorticklabels(), fontsize=label_fontsize)
@@ -150,13 +152,33 @@ def plot_gleason_os_xcell(cluster_file_path : str, phenotype_file : str, surviva
     print(pvalues_signif.index)
     print(pvalues_signif.columns)
     print(type(pvalues_signif.iloc[0,0]))
-    sns.set(font_scale=1.5)
-    s = sns.heatmap(pvalues_signif, annot=True, fmt='.2f', vmin=0, vmax=17, ax=axs_list[3], cbar_kws={'label': '-log10(p-value)'}) #annot_kws={"size": label_fontsize-1}
+    sns.set(font_scale=2.0)
+    s = sns.heatmap(pvalues_signif, annot=True, fmt='.2f', vmin=0, vmax=17, cmap='crest', ax=axs_list[3], cbar_kws={'label': '-log10(P)'}) #annot_kws={"size": label_fontsize-1}
     s.set_xlabel('Target cluster', fontsize=label_fontsize) 
     #s.set_ylabel('Cell type')
     s.set_xticklabels(s.get_xmajorticklabels(), fontsize=label_fontsize)
     s.set_yticklabels(s.get_ymajorticklabels(), fontsize=label_fontsize)
     
+    ### Add GSEA results for cluster 4.0 with PageRank-aggregated results.
+    gsea_df = pd.read_csv(gsea_file, sep=',')
+    # Extract top 8 results and create barplot with pvalues.
+    gsea_top_results = gsea_df.iloc[:8, :2]
+    gsea_top_results.set_index("term", inplace=True)
+    # Apply -log transform to pvalues.
+    gsea_top_results = gsea_top_results.apply(lambda x : -np.log10(x), axis='columns')
+    gsea_top_results = gsea_top_results[::-1]
+    print(gsea_top_results)
+    
+    gsea_top_results.plot(kind="barh", legend=False, width=0.8, ax=axs_list[4], grid=False)
+    for i, (p, pr) in enumerate(zip(gsea_top_results.index, gsea_top_results["p-value"])):
+        #plt.text(s=p, x=1, y=i, color="w", verticalalignment="center", size=18)
+        plt.text(s=str(round(np.power(10, -1.0*pr), 5)), x=pr-0.75, y=i, color="w",
+             verticalalignment="center", horizontalalignment="left", size=18)
+    axs_list[4].set_xlabel("-log10(P)")
+    axs_list[4].set_ylabel("")
+    axs_list[4].xaxis.label.set_fontsize(label_fontsize)
+    axs_list[4].yaxis.set_tick_params(labelsize=19)
+    axs_list[4].xaxis.set_tick_params(labelsize=label_fontsize)
     
     # Add mosaic labels above plots.
     for label, ax in axs.items():
@@ -196,7 +218,7 @@ def plot_fdrs():
                 linewidth=1.4)
     # axs.set_title("FDRs of PARADYS using DysRegNet networks")
     axs_list[0].legend(prop={'size':18})
-    axs_list[0].set_ylabel("FDR", fontsize=label_fontsize)
+    axs_list[0].set_ylabel("FDR (DysRegNet: suppressed only)", fontsize=label_fontsize-2)
     axs_list[0].set_xlabel("Rate of decoy mutations", fontsize=label_fontsize)
     axs_list[0].set_axisbelow(True)
     axs_list[0].grid(axis='y')
@@ -220,7 +242,7 @@ def plot_fdrs():
     # axs.set_title("FDRs of PARADYS using DysRegNet networks")
     #axs_list[1].legend(loc='upper right', title='Cohort', title_fontsize='small')
     axs_list[3].get_legend().remove()
-    axs_list[3].set_ylabel("FDR", fontsize=label_fontsize)
+    axs_list[3].set_ylabel("FDR (PRODIGY)", fontsize=label_fontsize-2)
     axs_list[3].set_xlabel("Rate of decoy mutations", fontsize=label_fontsize)
     axs_list[3].set_axisbelow(True)
     axs_list[3].grid(axis='y')
@@ -228,7 +250,7 @@ def plot_fdrs():
     axs_list[3].xaxis.set_tick_params(labelsize=label_fontsize)
     
     ### Add PARADYS with SSN networks plots on bottom left.
-    cohorts = ['prad', 'coad']
+    cohorts = ['prad', 'coad', 'brca']
     file_path = '../results/fdrs/PARADYS_SSN/'
     # Merge FDR files for different cohorts into one dataframe.
     combined_df = pd.DataFrame(columns=['patient', 'FDR', 'Rate', 'Cohort'])
@@ -250,7 +272,7 @@ def plot_fdrs():
                 ax=axs_list[2],
                 linewidth=1.4)
     axs_list[2].get_legend().remove()
-    axs_list[2].set_ylabel("FDR", fontsize=label_fontsize)
+    axs_list[2].set_ylabel("FDR (SSN)", fontsize=label_fontsize-2)
     axs_list[2].set_xlabel("Rate of decoy mutations", fontsize=label_fontsize)
     axs_list[2].set_axisbelow(True)
     axs_list[2].grid(axis='y')
@@ -279,7 +301,7 @@ def plot_fdrs():
                 ax=axs_list[1],
                 linewidth=1.4)
     axs_list[1].get_legend().remove()
-    axs_list[1].set_ylabel("FDR", fontsize=label_fontsize)
+    axs_list[1].set_ylabel("FDR (DysRegNet: suppressed & amplified)", fontsize=label_fontsize-2)
     axs_list[1].set_xlabel("Rate of decoy mutations", fontsize=label_fontsize)
     axs_list[1].set_axisbelow(True)
     axs_list[1].grid(axis='y')
@@ -476,6 +498,7 @@ def plot_pvalue_distributions(pvalue_file : str):
     plt.savefig('phenotype_pvals.pdf', format='pdf')
 
 
+
 if __name__=='__main__':
     
     # Input paths for Gleason/OS/Xcell plots.
@@ -483,10 +506,11 @@ if __name__=='__main__':
     phenotype_file = "../data/PRAD_phenotypes.csv"
     survival_file = "../data/PRAD_survival.txt"
     xcell_results_path = "../results/clustering/xcell/"
-    #plot_gleason_os_xcell(cluster_file_path, phenotype_file, survival_file, xcell_results_path)
+    gsea_file = "../results/clustering/gsea/GSEA_cluster40_top20_pagerank.csv"
+    #plot_gleason_os_xcell(cluster_file_path, phenotype_file, survival_file, xcell_results_path, gsea_file)
     
     # Input paths for FDR plots.
-    #plot_fdrs()
+    plot_fdrs()
     
     # Input files for top K drivers extraction.
     k = 20
