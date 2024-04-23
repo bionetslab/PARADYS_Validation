@@ -3,80 +3,6 @@ import numpy as np
 import pandas as pd
 import os
 from scipy.stats import chisquare, chi2
-import networkx as nx
-
-def calculate_page_rank(data, d=0.85, directed=True):
-    '''
-    Creates a linegraph and applies pagerank algorithm to get driver scores.
-
-    Parameters
-    ----------
-    data : Dataframe
-        Results data, columns are patient, drivers, dysregulations and p-values
-    d : float, optional
-        Dumping factor for the pagerank algorithm. The default is 0.85.
-    directed : Bool, optional
-        True if original dysregulation network is directed, false otherwise. The default is True.
-
-    Returns
-    -------
-    data : DataFrame
-        Same as input, with additional column with scores and ordered in descending score.
-
-    '''
-    # Extract unique drivers and edges.
-    total_drivers = set(data['drivers'])
-    target_edges = set(data['dysregulations'])
-    
-    # Create a directed or undirected graph
-    if directed:
-        G = nx.DiGraph()
-    else:
-        G = nx.Graph()
-
-    # Add vertices
-    G.add_nodes_from(total_drivers.union(target_edges))
-
-    # Assign attributes to vertices (genes and edges)
-    vertex_weights = {}
-    vertex_names = {}
-    vertex_colors = {}
-    edge_weights = {}
-
-    for vertex in total_drivers.union(target_edges):
-        vertex_weights[vertex] = data[data['drivers'] == vertex]['dysregulations'].count() / len(data['patient'])
-        vertex_names[vertex] = vertex
-        vertex_colors[vertex] = 0.5 if vertex in target_edges else 1
-
-    nx.set_node_attributes(G, vertex_weights, 'weight')
-
-    # Preprocess edges to remove unwanted characters and create a dictionary for quick access.
-    processed_edges = {edge.replace("(", "").replace(")", "").replace("'", "").replace(" ", ""): edge for edge in target_edges}
-    
-    # Add edges between connected edges with weight 1.
-    for edge in target_edges:
-        edge1 = edge.partition(', ')[2].replace("(", "").replace(")", "").replace("'", "").replace(" ", "")
-        for edge2 in target_edges:
-            edge0 = edge2.partition(', ')[0].replace("(", "").replace("'", "").replace(" ", "")
-            if edge0 == edge1:
-                G.add_edge(edge, processed_edges[edge2], weight=1)
-    
-    # Add edges between genes and edges with weight -log(p-value).
-    for driver in total_drivers:
-        data_driver = data[data['drivers'] == driver]
-        for edge in data_driver['dysregulations']:
-            G.add_edge(edge, driver, weight=-np.log(data_driver[data_driver['dysregulations'] == edge]['p-values'].values[0]))
-
-    # Apply PageRank algorithm and store scores.
-    pr = nx.pagerank(G, alpha=d, personalization=vertex_weights, weight='weight')
-    # Add scores as a new column in the original data DataFrame.
-    data['PageRank_Score'] = data['drivers'].map(pr)
-
-    # Sort the DataFrame based on the scores
-    data = data.sort_values(by='PageRank_Score', ascending=False)
-
-    return data
-
 
 def get_relations(kappa, cancer, patients, dic_patients_mutations, 
                   dic_patients_graphs, output_dir, save_file=False):
@@ -290,8 +216,6 @@ if __name__ == "__main__":
     cancer = 'PRAD_Decoy_075' 
     # Size of neighbor to consider for putative driver identification.
     kappa = 3
-    # Whether to compute driver scores based on PageRank algorithm.
-    scores = False
     # Input directory containing preprocessed files.
     input_dir = f'filtered_data/{cancer}/'
     # Output directory for storing result files.
@@ -379,10 +303,6 @@ if __name__ == "__main__":
         
         # If at least one driver has been detected, check if scoring is desired.
         if genes_sigs:
-            if scores:
-                df = calculate_page_rank(data, d=0.85) 
-                df.to_csv(output_dir+f'{p}_scores.csv', index=False)
-            else:
-                data.to_csv(output_dir+f'{p}.csv', index=False)
+            data.to_csv(output_dir+f'{p}.csv', index=False)
 
     print("FINISHED")
