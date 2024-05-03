@@ -1,0 +1,1 @@
+{"target": ["ARRB2", "TP53", "ATR", "RHOA", "POU2F1", "SP1", "RPL39", "CD40", "GNAL", "GNGT1", "RHOU", "PXN", "RARB", "CENPO", "ZNF667", "ZNF485", "MYC", "POLR3E", "DEK", "SNRPD3"], "target_id": "symbol", "runs": 1000, "replace": 100, "distance": "jaccard", "background_model": "complete", "type": "gene", "sigCont": false}

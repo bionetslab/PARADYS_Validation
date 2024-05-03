@@ -63,7 +63,7 @@ def plot_gleason_os_xcell(cluster_file_path : str, phenotype_file : str, surviva
     results.
     """
     # Create one large mosaic plot.
-    fig, axs = plt.subplot_mosaic([['A', 'A', 'B', 'B'], ['C', 'C', 'D', 'D'], ['.', '.', 'E', 'E']])
+    fig, axs = plt.subplot_mosaic([['A', 'A', 'B', 'B'], ['.', '.', 'C', 'C'], ['D', 'D', 'E', 'E']])
     fig.set_size_inches(18, 18)
     axs_list = list(axs.values())
     
@@ -121,7 +121,7 @@ def plot_gleason_os_xcell(cluster_file_path : str, phenotype_file : str, surviva
         means_df[clust] = mean_df1['mean'].to_list()
     
     sns.set(font_scale=1.8)
-    s = sns.heatmap(means_df, annot=True, fmt='.1f', ax=axs_list[2], cbar_kws={'label': 'Mean xCell score', 'location': 'left', 'pad': 0.15})
+    s = sns.heatmap(means_df, annot=True, fmt='.1f', ax=axs_list[3], cbar_kws={'label': 'Mean xCell score', 'location': 'left', 'pad': 0.15})
     s.set_xlabel('Cluster', fontsize=label_fontsize)
     s.set_ylabel('Cell type', fontsize=label_fontsize)
     s.set_xticklabels(s.get_xmajorticklabels(), fontsize=label_fontsize)
@@ -153,7 +153,7 @@ def plot_gleason_os_xcell(cluster_file_path : str, phenotype_file : str, surviva
     print(pvalues_signif.columns)
     print(type(pvalues_signif.iloc[0,0]))
     sns.set(font_scale=2.0)
-    s = sns.heatmap(pvalues_signif, annot=True, fmt='.2f', vmin=0, vmax=17, cmap='crest', ax=axs_list[3], cbar_kws={'label': '-log10(P)'}) #annot_kws={"size": label_fontsize-1}
+    s = sns.heatmap(pvalues_signif, annot=True, fmt='.2f', vmin=0, vmax=17, cmap='crest', ax=axs_list[4], cbar_kws={'label': '-log10(P)'}) #annot_kws={"size": label_fontsize-1}
     s.set_xlabel('Target cluster', fontsize=label_fontsize) 
     #s.set_ylabel('Cell type')
     s.set_xticklabels(s.get_xmajorticklabels(), fontsize=label_fontsize)
@@ -169,25 +169,26 @@ def plot_gleason_os_xcell(cluster_file_path : str, phenotype_file : str, surviva
     gsea_top_results = gsea_top_results[::-1]
     print(gsea_top_results)
     
-    gsea_top_results.plot(kind="barh", legend=False, width=0.8, ax=axs_list[4], grid=False)
+    df_ax = gsea_top_results.plot(kind="barh", legend=False, width=0.8, ax=axs_list[2], grid=False)
     for i, (p, pr) in enumerate(zip(gsea_top_results.index, gsea_top_results["p-value"])):
         #plt.text(s=p, x=1, y=i, color="w", verticalalignment="center", size=18)
-        plt.text(s=str(round(np.power(10, -1.0*pr), 5)), x=pr-0.75, y=i, color="w",
+        df_ax.text(s=str(round(np.power(10, -1.0*pr), 5)), x=pr-0.75, y=i, color="w",
              verticalalignment="center", horizontalalignment="left", size=18)
-    axs_list[4].set_xlabel("-log10(P)")
-    axs_list[4].set_ylabel("")
-    axs_list[4].xaxis.label.set_fontsize(label_fontsize)
-    axs_list[4].yaxis.set_tick_params(labelsize=19)
-    axs_list[4].xaxis.set_tick_params(labelsize=label_fontsize)
+    axs_list[2].set_xlabel("-log10(P)")
+    axs_list[2].set_ylabel("")
+    axs_list[2].xaxis.label.set_fontsize(label_fontsize)
+    axs_list[2].yaxis.set_tick_params(labelsize=19)
+    axs_list[2].xaxis.set_tick_params(labelsize=label_fontsize)
     
     # Add mosaic labels above plots.
     for label, ax in axs.items():
         # label physical distance to the left and up:
         trans = mtransforms.ScaledTranslation(-20/72, 7/72, fig.dpi_scale_trans)
-        ax.text(0.0, 1.0, label, transform=ax.transAxes + trans,
+        ax.text(-0.04, 1.0, label, transform=ax.transAxes + trans,
                 fontsize='x-large', va='bottom', fontfamily='sans-serif', fontweight='bold')
     
     fig.tight_layout()
+    fig.subplots_adjust(hspace=0.4, wspace=0.3)
     plt.savefig("gleason_os_xcell.pdf", format='pdf')
     
     
@@ -218,7 +219,7 @@ def plot_fdrs():
                 linewidth=1.4)
     # axs.set_title("FDRs of PARADYS using DysRegNet networks")
     axs_list[0].legend(prop={'size':18})
-    axs_list[0].set_ylabel("FDR (DysRegNet: suppressed only)", fontsize=label_fontsize-2)
+    axs_list[0].set_ylabel("FDR PARADYS \n(DysRegNet: suppressed only)", fontsize=label_fontsize-2)
     axs_list[0].set_xlabel("Rate of decoy mutations", fontsize=label_fontsize)
     axs_list[0].set_axisbelow(True)
     axs_list[0].grid(axis='y')
@@ -242,7 +243,7 @@ def plot_fdrs():
     # axs.set_title("FDRs of PARADYS using DysRegNet networks")
     #axs_list[1].legend(loc='upper right', title='Cohort', title_fontsize='small')
     axs_list[3].get_legend().remove()
-    axs_list[3].set_ylabel("FDR (PRODIGY)", fontsize=label_fontsize-2)
+    axs_list[3].set_ylabel("FDR PRODIGY", fontsize=label_fontsize-2)
     axs_list[3].set_xlabel("Rate of decoy mutations", fontsize=label_fontsize)
     axs_list[3].set_axisbelow(True)
     axs_list[3].grid(axis='y')
@@ -272,7 +273,7 @@ def plot_fdrs():
                 ax=axs_list[2],
                 linewidth=1.4)
     axs_list[2].get_legend().remove()
-    axs_list[2].set_ylabel("FDR (SSN)", fontsize=label_fontsize-2)
+    axs_list[2].set_ylabel("FDR PARADYS (SSN)", fontsize=label_fontsize-2)
     axs_list[2].set_xlabel("Rate of decoy mutations", fontsize=label_fontsize)
     axs_list[2].set_axisbelow(True)
     axs_list[2].grid(axis='y')
@@ -301,7 +302,7 @@ def plot_fdrs():
                 ax=axs_list[1],
                 linewidth=1.4)
     axs_list[1].get_legend().remove()
-    axs_list[1].set_ylabel("FDR (DysRegNet: suppressed & amplified)", fontsize=label_fontsize-2)
+    axs_list[1].set_ylabel("FDR PARADYS \n(DysRegNet: suppressed & amplified)", fontsize=label_fontsize-2)
     axs_list[1].set_xlabel("Rate of decoy mutations", fontsize=label_fontsize)
     axs_list[1].set_axisbelow(True)
     axs_list[1].grid(axis='y')
@@ -331,7 +332,7 @@ def get_top_k_drivers(k : int, drivers_file : str, clusters : list, output_path 
     if not os.path.exists(output_path):
         os.mkdir(output_path)
     
-    drivers_df = pd.read_csv(drivers_file, sep=';')
+    drivers_df = pd.read_csv(drivers_file, sep='\t')
     
     for clust in clusters:
         column_name = f'Driver_{clust[0]}_cluster_label_{clust}'
@@ -368,25 +369,30 @@ def plot_digest_pvalues(digest_path : str, tools : list, clusters : list):
         dataframes[tool]=tool_df
         
     # Init mosaic subplot.
-    fig, axs = plt.subplot_mosaic([['A', 'A', 'B', 'B'], ['.', 'C', 'C', '.']])
+    fig, axs = plt.subplot_mosaic([['A', 'A', 'B', 'B'], ['C', 'C', 'D', 'D']])
     fig.set_size_inches(7, 7)
     axs_list = list(axs.values())
     
     # Plot heatmap for DysRegNet pvalues with -log transformed pvalues.
     pvals_dysregnet = dataframes['dysregnet']
     pvals_dysregnet = pvals_dysregnet[pvals_dysregnet.columns].astype(float)
-    s = sns.heatmap(pvals_dysregnet, annot=True, fmt='.2f', vmin=1.3, vmax=3, ax=axs_list[0], cmap='magma', cbar_kws={'label': '-log10(p-value)'})
+    s = sns.heatmap(pvals_dysregnet, annot=True, fmt='.2f', vmin=1.3, vmax=3, ax=axs_list[0], cmap='crest', cbar_kws={'label': '-log10(P)'})
     s.set_xlabel('Patient Cluster (DysRegNet)')
     
     hitndrive_df = dataframes['hitndrive']
     hitndrive_df = hitndrive_df[hitndrive_df.columns].astype(float)
-    s = sns.heatmap(hitndrive_df, annot=True, fmt='.2f', vmin=1.3, vmax=3, ax=axs_list[1], cmap='magma', cbar_kws={'label': '-log10(p-value)'})
-    s.set_xlabel('Patient Cluster (HITNDRIVE)')
+    s = sns.heatmap(hitndrive_df, annot=True, fmt='.2f', vmin=1.3, vmax=3, ax=axs_list[1], cmap='crest', cbar_kws={'label': '-log10(P)'})
+    s.set_xlabel('Patient Cluster (HITnDrive)')
     
     prodigy_df = dataframes['prodigy']
     prodigy_df = prodigy_df[prodigy_df.columns].astype(float)
-    s = sns.heatmap(prodigy_df, annot=True, fmt='.2f', vmin=1.3, vmax=3, ax=axs_list[2], cmap='magma', cbar_kws={'label': '-log10(p-value)'})
+    s = sns.heatmap(prodigy_df, annot=True, fmt='.2f', vmin=1.3, vmax=3, ax=axs_list[2], cmap='crest', cbar_kws={'label': '-log10(P)'})
     s.set_xlabel('Patient Cluster (PRODIGY)')
+    
+    prodigy_df = dataframes['pnc']
+    prodigy_df = prodigy_df[prodigy_df.columns].astype(float)
+    s = sns.heatmap(prodigy_df, annot=True, fmt='.2f', vmin=1.3, vmax=3, ax=axs_list[3], cmap='crest', cbar_kws={'label': '-log10(P)'})
+    s.set_xlabel('Patient Cluster (PNC)')
     
     # Add mosaic labels above plots.
     for label, ax in axs.items():
@@ -465,8 +471,8 @@ def plot_pvalue_distributions(pvalue_file : str):
     # Make the pairgrid.
     g = sns.PairGrid(combined_df, hue="Phenotype",
                      x_vars=combined_df.columns[:4], y_vars=['cluster'], hue_order=['PSA value', 'Gleason score'],
-                     height=20, aspect=.25)
-    #g.fig.set_size_inches(70,40)
+                     hue_kws={"markers": ['s', 'o']})
+    g.fig.set_size_inches(34,16)
     g.tick_params(axis='y', labelsize=label_fontsize)
     
     # Draw a dot plot using the stripplot function
@@ -475,7 +481,7 @@ def plot_pvalue_distributions(pvalue_file : str):
     
     # Use the same x axis limits on all columns and add better labels
     g.set(xlim=(-0.1, 1.1), ylabel="")
-    g.add_legend(title='', fontsize=label_fontsize)
+    g.add_legend(title='', fontsize=label_fontsize, markerscale=6.0)
 
     # Use semantically meaningful titles for the columns
     titles = ["PARADYS (DysRegNet)", "PNC", "HITnDrive",
@@ -486,7 +492,7 @@ def plot_pvalue_distributions(pvalue_file : str):
         # Make the grid horizontal instead of vertical
         ax.xaxis.grid(False)
         ax.yaxis.grid(True)
-        ax.set_xlabel("p-value", fontsize=label_fontsize)
+        ax.set_xlabel("P-value", fontsize=label_fontsize)
         ax.xaxis.set_tick_params(labelsize=label_fontsize)
         ax.axvline(x = 0.05, color = 'black', linestyle='--', linewidth=4.0)
         
@@ -497,7 +503,207 @@ def plot_pvalue_distributions(pvalue_file : str):
     sns.despine(left=True, bottom=True)
     plt.savefig('phenotype_pvals.pdf', format='pdf')
 
+def plot_cluster_sizes(cluster_file_path : str):
+    
+    clusters = [4.0, 4.1, 4.2, 4.3]
+    cluster_level = 4
+    clust_sizes = []
+    
+    for clust in clusters:
+        samples = get_patients_of_cluster(cluster_file_path, clust, cluster_level)
+        clust_sizes.append(len(samples))
+        
+    fig, ax = plt.subplots()
 
+    fruits = ['apple', 'blueberry', 'cherry', 'orange']
+    counts = [40, 100, 30, 55]
+    bar_labels = ['red', 'blue', '_red', 'orange']
+    bar_colors = ['tab:red', 'tab:blue', 'tab:red', 'tab:orange']
+
+    cluster_str = [str(clust) for clust in clusters]
+    ax.bar(cluster_str, clust_sizes)
+
+    ax.set_ylabel('Cluster size', fontsize=15)
+    ax.set_xlabel('Patient cluster (DysRegNet)', fontsize=12)
+    ax.xaxis.set_tick_params(labelsize=15)
+    ax.yaxis.set_tick_params(labelsize=15)
+
+    plt.savefig("cluster_sizes.pdf", format='pdf')    
+    
+def plot_kappas(kappa_data : str):
+    
+    cohorts = ['BRCA', 'COAD', 'PRAD']
+    kappas = list(range(1,7))
+    fig, axs = plt.subplot_mosaic([['A', 'A', 'B', 'B'], ['.', 'C', 'C', '.']])
+    # fig.set_size_inches(7, 7)
+    axs_list = list(axs.values())
+    
+    values = {cohort : [] for cohort in cohorts}
+    
+    for cohort in cohorts:
+        for kappa in kappas:
+            # Open corresponding file.
+            file_path = kappa_data+f'{cohort}/gene_sets_kappa{kappa}.csv'
+            df = pd.read_csv(file_path)
+            # Add length of file.
+            values[cohort].append(df.shape[0])
+            
+    # Compute log2 fold changes.
+    """ fold_change_dict = {cohort : [] for cohort in cohorts}
+    for cohort in cohorts:
+        cohort_fold_change = []
+        cohort_values = values[cohort]
+        for i in range(1,6):
+            value = np.log2(cohort_values[i]/cohort_values[i-1])
+            cohort_fold_change.append(value)
+        fold_change_dict[cohort] = cohort_fold_change
+    
+    # Plot barplots from kappa data.
+    kappas_str = []
+    for index, kappa in enumerate(kappas):
+        if not index==0:
+            to_add = f'{kappas[index-1]}-{kappa}'
+            kappas_str.append(to_add) """
+    kappas_str = [str(kappa) for kappa in kappas]
+    axs_list[0].bar(kappas_str, values['PRAD'])
+    axs_list[0].set_xlabel('Value of kappa', fontsize=11)
+    axs_list[0].set_ylabel('Candidate driver \n set size (PRAD)', fontsize=11)
+    
+    axs_list[1].bar(kappas_str, values['COAD'])
+    axs_list[1].set_xlabel('Value of kappa', fontsize=11)
+    axs_list[1].set_ylabel('Candidate driver \n set size (COAD)', fontsize=11)
+    
+    axs_list[2].bar(kappas_str, values['BRCA'])
+    axs_list[2].set_xlabel('Value of kappa', fontsize=11)
+    axs_list[2].set_ylabel('Candidate driver \n set size (BRCA)', fontsize=11)
+    
+    # Add mosaic labels above plots.
+    for label, ax in axs.items():
+        # label physical distance to the left and up:
+        trans = mtransforms.ScaledTranslation(-20/72, 7/72, fig.dpi_scale_trans)
+        ax.text(0.0, 1.0, label, transform=ax.transAxes + trans,
+                fontsize='x-large', va='bottom', fontfamily='sans-serif', fontweight='bold')
+    
+    fig.tight_layout()
+    plt.savefig("kappa_plots.pdf", format='pdf')
+
+def plot_kappas_patient_aggregated(kappa_data : str):
+    cohorts = ['BRCA', 'COAD', 'PRAD']
+    kappas = list(range(1,7))
+    fig, axs = plt.subplot_mosaic([['A', 'A', 'B', 'B'], ['.', 'C', 'C', '.']])
+    # fig.set_size_inches(7, 7)
+    axs_list = list(axs.values())
+    
+    patient_kappa_dict_PRAD = {'patient': [], 'kappa' : [], 'num_drivers' : []}
+    patient_kappa_dict_BRCA = {'patient': [], 'kappa': [], 'num_drivers': []}
+    patient_kappa_dict_COAD = {'patient': [], 'kappa': [], 'num_drivers': []}
+    all_dicts = {'PRAD': patient_kappa_dict_PRAD, 'BRCA': patient_kappa_dict_BRCA, 'COAD': patient_kappa_dict_COAD}
+    
+    for cohort in cohorts:
+        for kappa in kappas:
+            # Open corresponding file.
+            file_path = kappa_data+f'{cohort}/gene_sets_kappa{kappa}.csv'
+            df = pd.read_csv(file_path)
+            # Count number of unique drivers for each patient.
+            patients = set(df['patients'])
+            patient_drivers = {pat : set() for pat in patients}
+            for pat, driver in zip(df['patients'], df['genes']):
+                patient_drivers[pat].add(driver)
+                
+            # Add number of drivers per patient to all data dict.
+            for pat, drivers in patient_drivers.items():
+                all_dicts[cohort]['patient'].append(pat)
+                all_dicts[cohort]['kappa'].append(kappa)
+                all_dicts[cohort]['num_drivers'].append(len(drivers))
+    
+    # Transfrom common dictionary into cohort-specific dataframes.
+    prad_df = pd.DataFrame(all_dicts['PRAD'])
+    coad_df = pd.DataFrame(all_dicts['COAD'])
+    brca_df = pd.DataFrame(all_dicts['BRCA'])
+    
+    prad_df.to_csv('prad_drivers.csv', sep='\t')
+    coad_df.to_csv('coad_drivers.csv', sep='\t')
+    brca_df.to_csv('brca_drivers.csv', sep='\t')
+    
+    # Plot lineplot with aggregated patient drivers.
+    sns.lineplot(data=prad_df, x="kappa", y="num_drivers", ax=axs_list[0], errorbar='sd')
+    axs_list[0].set_xlabel("K", fontsize=12)
+    axs_list[0].set_ylabel("Number of unique drivers per patient (PRAD)", fontsize=12)
+    sns.lineplot(data=brca_df, x="kappa", y='num_drivers', ax=axs_list[1], errorbar='sd')
+    axs_list[1].set_xlabel("K", fontsize=12)
+    axs_list[1].set_ylabel("Number of unique drivers per patient (BRCA)", fontsize=12)
+    sns.lineplot(data=coad_df, x="kappa", y="num_drivers", ax=axs_list[2], errorbar="sd")
+    axs_list[0].set_xlabel("K", fontsize=12)
+    axs_list[0].set_ylabel("Number of unique drivers per patient (COAD)", fontsize=12)
+    
+    for label, ax in axs.items():
+        # label physical distance to the left and up:
+        trans = mtransforms.ScaledTranslation(-20/72, 7/72, fig.dpi_scale_trans)
+        ax.text(0.0, 1.0, label, transform=ax.transAxes + trans,
+                fontsize='x-large', va='bottom', fontfamily='sans-serif', fontweight='bold')
+    
+    fig.tight_layout()
+    plt.savefig("kappa_aggregated.pdf", format='pdf')
+                
+def plot_kappas_edge_aggregated(kappa_data : str):
+    cohorts = ['BRCA', 'COAD', 'PRAD']
+    kappas = list(range(1,7))
+    fig, axs = plt.subplot_mosaic([['A', 'A', 'B', 'B'], ['.', 'C', 'C', '.']])
+    # fig.set_size_inches(7, 7)
+    axs_list = list(axs.values())
+    
+    patient_kappa_dict_PRAD = {'dys': [], 'kappa' : [], 'num_drivers' : []}
+    patient_kappa_dict_BRCA = {'dys': [], 'kappa': [], 'num_drivers': []}
+    patient_kappa_dict_COAD = {'dys': [], 'kappa': [], 'num_drivers': []}
+    all_dicts = {'PRAD': patient_kappa_dict_PRAD, 'BRCA': patient_kappa_dict_BRCA, 'COAD': patient_kappa_dict_COAD}
+    
+    for cohort in cohorts:
+        print(f"Starting with {cohort} cohort...")
+        for kappa in kappas:
+            # Open corresponding file.
+            file_path = kappa_data+f'{cohort}/gene_sets_kappa{kappa}.csv'
+            df = pd.read_csv(file_path)
+            # Count number of unique drivers for each dysregulation.
+            edges = set(df['connected dysregulations'])
+            edge_drivers = {edge : set() for edge in edges}
+            for driver, dys in zip(df['genes'], df['connected dysregulations']):
+                edge_drivers[dys].add(driver)
+                
+            # Add number of drivers per patient and edge to all data dict.
+            for dys, drivers in edge_drivers.items():
+                all_dicts[cohort]['dys'].append(dys)
+                all_dicts[cohort]['kappa'].append(kappa)
+                all_dicts[cohort]['num_drivers'].append(len(drivers))
+    
+    # Transfrom common dictionary into cohort-specific dataframes.
+    prad_df = pd.DataFrame(all_dicts['PRAD'])
+    coad_df = pd.DataFrame(all_dicts['COAD'])
+    brca_df = pd.DataFrame(all_dicts['BRCA'])
+    
+    prad_df.to_csv('prad_drivers.csv', sep='\t')
+    coad_df.to_csv('coad_drivers.csv', sep='\t')
+    brca_df.to_csv('brca_drivers.csv', sep='\t')
+    
+    # Plot lineplot with aggregated patient drivers.
+    sns.lineplot(data=prad_df, x="kappa", y="num_drivers", ax=axs_list[0], errorbar='sd')
+    axs_list[0].set_xlabel("K", fontsize=12)
+    axs_list[0].set_ylabel("Number of unique drivers per patient (PRAD)", fontsize=12)
+    sns.lineplot(data=brca_df, x="kappa", y='num_drivers', ax=axs_list[1], errorbar='sd')
+    axs_list[1].set_xlabel("K", fontsize=12)
+    axs_list[1].set_ylabel("Number of unique drivers per patient (BRCA)", fontsize=12)
+    sns.lineplot(data=coad_df, x="kappa", y="num_drivers", ax=axs_list[2], errorbar="sd")
+    axs_list[0].set_xlabel("K", fontsize=12)
+    axs_list[0].set_ylabel("Number of unique drivers per patient (COAD)", fontsize=12)
+    
+    for label, ax in axs.items():
+        # label physical distance to the left and up:
+        trans = mtransforms.ScaledTranslation(-20/72, 7/72, fig.dpi_scale_trans)
+        ax.text(0.0, 1.0, label, transform=ax.transAxes + trans,
+                fontsize='x-large', va='bottom', fontfamily='sans-serif', fontweight='bold')
+    
+    fig.tight_layout()
+    plt.savefig("kappa_edge_aggregated.pdf", format='pdf')
+    
 
 if __name__=='__main__':
     
@@ -509,23 +715,36 @@ if __name__=='__main__':
     gsea_file = "../results/clustering/gsea/GSEA_cluster40_top20_pagerank.csv"
     #plot_gleason_os_xcell(cluster_file_path, phenotype_file, survival_file, xcell_results_path, gsea_file)
     
+    # Supplement plot for cluster sizes.
+    #plot_cluster_sizes(cluster_file_path)
+    
     # Input paths for FDR plots.
-    plot_fdrs()
+    #plot_fdrs()
     
     # Input files for top K drivers extraction.
     k = 20
-    drivers_file = '../results/clustering/driver_frequencies/cluster_drivers_PRODIGY_PRAD.csv'
+    drivers_file = '../results/clustering/driver_frequencies/cluster_drivers_PNC_PRAD.csv'
     clusters = ['4.0', '4.1', '4.2', '4.3']
-    output_path = './top_drivers_prodigy/'
-    # get_top_k_drivers(k, drivers_file, clusters, output_path) 
+    output_path = './top_drivers_pnc/'
+    #get_top_k_drivers(k, drivers_file, clusters, output_path) 
     
     # Plot pvalues of DIGEST on top 20 drivers of PARADYS, PRODIGY, HITNDRIVE.
     digest_path = "../results/clustering/digest/"
-    tools = ['dysregnet', 'hitndrive', 'prodigy']
+    tools = ['dysregnet', 'hitndrive', 'prodigy', 'pnc']
     clusters = ['4.0', '4.1', '4.2', '4.3']
     # plot_digest_pvalues(digest_path, tools, clusters)
     
     # Plot pvalues of PSA value and Gleason score for several tools.
     pvals_file = '../results/clustering/phenotype_pvalues/p_values_phenotypes.csv'
     #plot_pvalue_distributions(pvals_file)
+    
+    # Kappa vs neighborhood size plot.
+    kappa_data = "../data/kappa_data_dysregnet/"
+    #plot_kappas(kappa_data)
+    
+    # Plot patientwise aggregated kappa neighborhood sizes.
+    #plot_kappas_patient_aggregated(kappa_data)
+    
+    # Plot edge-wise aggregated kappa neighborhood gene set sizes.
+    plot_kappas_edge_aggregated(kappa_data)
 

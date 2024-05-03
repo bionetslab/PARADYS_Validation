@@ -1,0 +1,1 @@
+{"target": ["ARRB2", "WNT7B", "STIL", "RALBP1", "TREM2", "OPRM1", "PAX4", "ACTN3", "CTSK", "WNK4", "FANCC", "OCRL", "MYH3", "LRCH4", "CBX2", "CHRM2", "SKI", "FAR2", "FANCG", "MAL"], "target_id": "symbol", "runs": 1000, "replace": 100, "distance": "jaccard", "background_model": "complete", "type": "gene", "sigCont": false}

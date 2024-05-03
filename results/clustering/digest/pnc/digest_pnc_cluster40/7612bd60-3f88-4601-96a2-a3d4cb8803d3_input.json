@@ -1,0 +1,1 @@
+{"target": ["ARRB2", "ZNF154", "MAPK3", "CLTC", "ZNF74", "ZNF404", "SNRNP200", "ZNF655", "ZNF30", "CALM1", "NEDD8", "AURKB", "HIST2H2AC", "ZNF146", "PCDHB5", "GNB5", "F12", "ZNF766", "ZNF334", "ERBB3"], "target_id": "symbol", "runs": 1000, "replace": 100, "distance": "jaccard", "background_model": "complete", "type": "gene", "sigCont": false}
